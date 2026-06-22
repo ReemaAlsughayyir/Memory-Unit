@@ -1,32 +1,64 @@
-module Ram(OutData, InData, Address, MemWrite, MemRead, ClockSignal);
+`timescale 1 ns / 1 ps
 
-output reg [15:0] OutData;
-input [15:0] InData;
-input [8:0] Address;
-input MemWrite, MemRead, ClockSignal;
+module Memory_Testbench;
 
-integer i;
-reg [15:0] location [511:0];
+// Inputs
+reg [15:0] InData;
+reg [8:0] Address;
+reg MemWrite, MemRead, ClockSignal;
 
-// Initialize memory
+// Output
+wire [15:0] OutData;
+
+// Instantiate RAM
+Ram uut (
+    .OutData(OutData),
+    .InData(InData),
+    .Address(Address),
+    .MemWrite(MemWrite),
+    .MemRead(MemRead),
+    .ClockSignal(ClockSignal)
+);
+
+// Clock generation
+always #5 ClockSignal = ~ClockSignal;
+
+// Test sequence
 initial begin
-    for (i = 0; i <= 511; i = i + 1) begin
-        location[i] = i;
-    end
-end
+    ClockSignal = 0;
+    MemWrite = 0;
+    MemRead = 0;
+    Address = 0;
+    InData = 0;
 
-// Read operation
-always @(Address or MemRead) begin
-    if (MemRead == 1 && MemWrite == 0)
-        OutData <= location[Address];
-    else if (MemRead == 0)
-        OutData <= 16'hxxxx;
-end
+    #10;
 
-// Write operation
-always @(posedge ClockSignal) begin
-    if (MemWrite == 1 && MemRead == 0)
-        location[Address] <= InData;
+    // Write 1
+    Address = 1;
+    InData = 16'hA5A5;
+    MemWrite = 1;
+    #10;
+    MemWrite = 0;
+
+    // Read 1
+    MemRead = 1;
+    #10;
+    MemRead = 0;
+
+    // Write 2
+    Address = 2;
+    InData = 16'h5A50;
+    MemWrite = 1;
+    #10;
+    MemWrite = 0;
+
+    // Read 2
+    MemRead = 1;
+    #10;
+    MemRead = 0;
+
+    #20;
+    $finish;
 end
 
 endmodule
