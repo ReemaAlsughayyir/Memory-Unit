@@ -1,0 +1,3 @@
+module Ram(OutData, InData, Address, MemWrite, MemRead, ClockSignal);
+...
+endmodule
